@@ -21,7 +21,7 @@ fh = logging.FileHandler('logFile.log')
 fh.setLevel(logging.INFO)
 fh.setFormatter(logging.Formatter('%(levelname)s - %(asctime)s - %(message)s'))
 logger.addHandler(fh)
-print ("Testing Git")
+
 
 # This function generates a file containing rpk values for each count file that is input. It also returns a sum
 # of all the rpk values in the output file. --> [total_rpk, dictionary{gene_id: rpk_values} ]
