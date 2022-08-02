@@ -9,14 +9,6 @@
 * pipeline input parameters
 */
 
-params.reads = "/home/avianeagle/bioinfo/TestSamples/Chr1Subset/*_{1,2}.fastq.gz"
-params.reference = "/home/avianeagle/bioinfo/TestSamples/Chr1Subset/PlasmoDB-57_PbergheiANKA_chr1.fasta"
-params.outdir = "/home/avianeagle/bioinfo/testing_results"
-params.gff = "/home/avianeagle/bioinfo/TestSamples/Chr1Subset/PlasmoDB-57_PbergheiANKA_chr1.gff"
-params.config = "/home/avianeagle/bioinfo/TestSamples/sampletable-nextflow.txt"
-params.paired = false
-params.stranded = true
-
 log.info """\
 	R N A S E Q - NF P I P E L I N E
 	================================
@@ -31,7 +23,7 @@ log.info """\
 */
 process index {
 
-	container = 'biocontainers/hisat2:2.2.1--h87f3376_4'
+	container = 'quay.io/biocontainers/hisat2:2.2.1--h87f3376_4'
 	
 	input:
 	path reference from params.reference
@@ -100,7 +92,7 @@ else {
 */
 	process get_phred {
 		
-		container = 'python:3.11.0b4-alpine3.16'
+		container = 'python3only'
 		
 		input:
 		tuple val(pair_id), path('fastqc_dir') from get_phred_ch
@@ -111,11 +103,11 @@ else {
 		shell:
 		if (params.paired)
 			"""
-			python3 ~/bin/RunGetPhredEncoding2.py ${fastqc_dir}/${pair_id}_1_fastqc > phredEncoding.txt
+			RunGetPhredEncoding2.py ${fastqc_dir}/${pair_id}_1_fastqc > phredEncoding.txt
 			"""
 		else
 			"""
-			python3 ~/bin/RunGetPhredEncoding2.py ${fastqc_dir}/${pair_id}_fastqc > phredEncoding.txt
+			RunGetPhredEncoding2.py ${fastqc_dir}/${pair_id}_fastqc > phredEncoding.txt
 			"""
 	}
 /*
@@ -124,7 +116,7 @@ else {
 
 	process trim{
 	
-		container = 'biocontainers/trim-galore:0.6.7--hdfd78af_0'
+		container = 'quay.io/biocontainers/trim-galore:0.6.7--hdfd78af_0'
 		
 		input:
 		tuple val(pair_id), path(reads) from read_pairs_ch
@@ -154,8 +146,6 @@ else {
 	
 		container = 'hisat2samtools'
 		
-		publishDir params.outdir, mode:'copy'
-		
 		input:
 		tuple val(pair_id), path("${pair_id}_1_val_1.fq.gz"), path("${pair_id}_2_val_2.fq.gz") from trimmed_pairs_ch
 		path 'referenceIndex.*.ht2' from index_ch
@@ -184,8 +174,6 @@ else {
 	process split_bam {
 		
 		container = 'biocontainers/samtools:v1.9-4-deb_cv1'
-		
-		publishDir params.outdir, mode:'copy'
 		
 		input:
 		tuple val(pair_id), path("${pair_id}.bam") from qsplit_bam_ch
@@ -282,7 +270,7 @@ else {
 */
 	process generate_bigwig {
 	
-		container = 'biocontainers/deeptools:3.5.1--py_0'
+		container = 'quay.io/biocontainers/deeptools:3.5.1--py_0'
 	
 		publishDir params.outdir, mode:'copy'
 		
@@ -316,8 +304,6 @@ else {
 	
 		container = 'biocontainers/htseq:v0.11.2-1-deb-py3_cv1'
 		
-		publishDir params.outdir, mode:'copy'
-		
 		input:
 		tuple val(pair_id), path("${pair_id}.bam") from count_bam_ch
 		tuple val(pair_id), path("${pair_id}.bam.bai") from bam_index_ch
@@ -349,7 +335,7 @@ else {
 */
 	process TPM{
 	
-		container = 'python:3.11.0b4-alpine3.16'
+		container = 'python3only'
 		
 		publishDir params.outdir, mode:'copy'
 		
@@ -362,11 +348,11 @@ else {
 		script:
 		if (params.stranded)
 			"""
-			python3 ~/bin/TPMScript.py --Stranded --GffFile $gffFile --UniqueFWD ${pair_id}.fwd.unique.txt --NonuniqueFWD ${pair_id}.fwd.nonunique.txt --UniqueREV ${pair_id}.rev.unique.txt --NonuniqueREV ${pair_id}.rev.nonunique.txt --SampleName $pair_id
+			TPMScript.py --Stranded --GffFile $gffFile --UniqueFWD ${pair_id}.fwd.unique.txt --NonuniqueFWD ${pair_id}.fwd.nonunique.txt --UniqueREV ${pair_id}.rev.unique.txt --NonuniqueREV ${pair_id}.rev.nonunique.txt --SampleName $pair_id
 			"""
 		else
 			"""
-			python3 ~/bin/TPMScript.py --GffFile $gffFile --UniqueFWD ${pair_id}.fwd.unique.txt --NonuniqueFWD ${pair_id}.fwd.nonunique.txt --SampleName $pair_id
+			TPMScript.py --GffFile $gffFile --UniqueFWD ${pair_id}.fwd.unique.txt --NonuniqueFWD ${pair_id}.fwd.nonunique.txt --SampleName $pair_id
 			touch ${pair_id}.rev.unique.tpm.txt
             touch ${pair_id}.rev.nonunique.tpm.txt
 			"""
@@ -376,6 +362,8 @@ else {
 * Run DESeq2 for relevant sample pairs - Only does 2 conditions; requires at least 2 replicates; only does for fwd_unique data
 */
 	process DESeq2{
+	
+		container = 'deseq2'
 	
 		publishDir params.outdir, mode:'copy'
 		
@@ -388,7 +376,7 @@ else {
 		
 		script:
 		"""
-		python3 ~/bin/DEseq2.py --countFiles "${file_paths}" --countFilesType 'list' --config ${config}
+		DEseq2.py --countFiles "${file_paths}" --countFilesType 'list' --config ${config}
 		"""
 	
 	
