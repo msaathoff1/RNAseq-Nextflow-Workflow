@@ -4,7 +4,7 @@ FROM python:3
 USER root
 
 # copy necessary scripts
-COPY ./bin/* /usr/local/bin
+COPY ./bin/* /usr/local/bin/
 
 # install gffutils python library
 ADD https://bootstrap.pypa.io/get-pip.py /tmp/get_pip.py

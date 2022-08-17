@@ -7,14 +7,6 @@ import gffutils
 import os
 import sqlite3
 
-# %%
-
-import logging
-import argparse
-import gffutils
-import os
-import sqlite3
-
 # Set up logger for error reporting of the database
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)

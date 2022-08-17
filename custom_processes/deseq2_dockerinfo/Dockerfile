@@ -24,4 +24,4 @@ ADD http://master.bioconductor.org/todays-date /tmp/
 RUN R -f /tmp/install.R
 
 # copy over necessary scripts
-COPY ./bin/* /usr/local/bin
+COPY ./bin/* /usr/local/bin/

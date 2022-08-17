@@ -8,9 +8,11 @@ import subprocess
 
 # Set up logger for error handling and import subprocess
 
+os.mkdir('deseq2results')
+
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
-fh = logging.FileHandler('logFile.log')
+fh = logging.FileHandler('deseq2results/logFile.log')
 fh.setLevel(logging.INFO)
 fh.setFormatter(logging.Formatter('%(levelname)s - %(asctime)s - %(message)s'))
 logger.addHandler(fh)
@@ -53,7 +55,6 @@ def prepFiles(countfiles_list, configFile):
                     for file in countfiles_list:
                         filename = str(os.fsdecode(file))  # get the names of the files.
                         if configSampleName in filename:  # match the sample names to the files.
-                            logger.info([str(configSampleName), str(filename), str(condition)])
                             sampleTable.append([str(configSampleName), str(filename), str(condition)])
                             # NOTE - SAMPLE/FILE NAMES MUST BE DISTINCT - "in" will conflate "treated, untreated"
                         else:
@@ -86,7 +87,6 @@ def perform_deseq2(conditions, sampleTable, countfiles_list):
         logger.error("You must have at least 2 replicates per condition.")
         raise SystemExit("You must have at least 2 replicates per condition.")
     else:
-        # fsencode(countFile_dir) ??
         conditions_set = set(conditions)
         conditions_list = list(conditions_set)  # get rid of the duplicates
 
@@ -100,7 +100,6 @@ def perform_deseq2(conditions, sampleTable, countfiles_list):
                              "missing.")
         else:
             os.mkdir('countfiles_dir')
-            os.mkdir('deseq2results')
             for file in countfiles_list:
                 origin = file
                 destination = 'countfiles_dir/' + str(os.fsdecode(file))
@@ -116,7 +115,6 @@ def perform_deseq2(conditions, sampleTable, countfiles_list):
                                 sampleTable_R.write("\t".join(str(i) for i in entry))
                                 sampleTable_R.write("\n")
                     sampleTable_R.close()  # explicitly close so there is a sep. file for each combo
-                    logger.info(["DEseq2Rbit.r", "SampleTable_R.txt", "countfiles_dir", str(condition_a), str(condition_b)])
                     subprocess.run(["DEseq2Rbit.r", "SampleTable_R.txt", "countfiles_dir", str(condition_a), str(condition_b)])
     return "done"
 
@@ -129,20 +127,30 @@ def __main__():
     parser.add_argument('--countFilesType', required=True, help="Takes either 'dir' or 'list' as a setting.")
 
     args = parser.parse_args()
-    if args.countFilesType == 'dir':
-        # Prep the files and run DESeq2
-        files_list = list_of_files(args.countFiles)
-        os.chdir(args.countFiles)
-        get_info = prepFiles(files_list, args.config)
-        all_results = perform_deseq2(get_info[0], get_info[1], files_list)
-        print(all_results)
-    elif args.countFilesType == 'list':
-        countFiles = args.countFiles.split()
-        get_info = prepFiles(countFiles, args.config)
-        all_results = perform_deseq2(get_info[0], get_info[1], countFiles)
-        print(all_results)
 
+    with open(args.config, 'r') as config:
+        for i, line in enumerate(config):
+            pass
+    config.close()
+
+    if i < 1:
+        logger.warning('DESeq2 config file is empty. Not running DESeq2.')
+    else:
+        if args.countFilesType == 'dir':
+            # Prep the files and run DESeq2
+            files_list = list_of_files(args.countFiles)
+            os.chdir(args.countFiles)
+            get_info = prepFiles(files_list, args.config)
+            all_results = perform_deseq2(get_info[0], get_info[1], files_list)
+            print(all_results)
+        elif args.countFilesType == 'list':
+            countFiles = args.countFiles.split()
+            get_info = prepFiles(countFiles, args.config)
+            all_results = perform_deseq2(get_info[0], get_info[1], countFiles)
+            print(all_results)
+        else:
+            logger.error("The string provided to countFilesType is not a valid type. Please ensure it is 'dir' or 'list'.")
 
 if __name__ == "__main__": __main__()
 
-# create a mode where prep is called within deseq2? - might be nice. Then just 1 f call.
+
