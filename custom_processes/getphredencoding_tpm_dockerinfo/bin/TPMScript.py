@@ -180,7 +180,7 @@ def __main__():
         # Double check all is good
         total_tpm_sum = math.floor(unique_fwd_tpm + unique_rev_tpm + nonunique_fwd_tpm + nonunique_rev_tpm)
         if total_tpm_sum != 1000000:
-            raise SystemExit("TPM total for {} is not one million. Check everything's good.".format(args.SampleName))
+            logger.error("TPM total for {} is not one million. Check everything's good.".format(args.SampleName))
 
     else:
         # Store count values as dictionaries for use
@@ -206,7 +206,7 @@ def __main__():
         # Double check all is good
         total_tpm_sum = math.floor(unique_fwd_tpm + nonunique_fwd_tpm)
         if total_tpm_sum != 1000000:
-            raise SystemExit("TPM total for {} is not one million. Check everything's good.".format(args.SampleName))
+            logger.error("TPM total for {} is not one million. Check everything's good.".format(args.SampleName))
 
 
 if __name__ == "__main__": __main__()
