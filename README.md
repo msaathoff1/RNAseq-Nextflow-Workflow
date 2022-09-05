@@ -5,7 +5,7 @@ viewing as a part of VEuPathDB. Generate required bigwig files, TPM-
 normalized count files, pre-calculated differential expression values for
 each gene, and quality information.
 
-####Contents: <br />
+#### Contents: <br />
 
 install.me.sh <br />
 nfscript.nf <br />
@@ -19,7 +19,7 @@ getphredencoding_tpm_dockerinfo <br />
 hisat2samtools_dockerinfo <br />
 {UTR_getphredencoding_tpm_dockerinfo } This is specific to this project. <br />
 
-####Installation: <br />
+#### Installation: <br />
 
 Docker must be installed independently by the user before install.me.sh
 can be run. Instructions can be found at:
@@ -29,18 +29,18 @@ Once this is complete,
 install.me.sh can be run as a bash script. It will install Nextflow
 itself as well as build/pull all docker images.
 
-####Input:
+#### Input:
 
 1. The inputs for this workflow are .fastq files stored in a directory
 whose path is specified in the nextflow.config file.
 2. The complete and accurate nextflow.config file must be in the
 directory from which Nextflow is being run.
 
-####Usage: <br />
+#### Usage: <br />
 
 nextflow [options] nfscript.nf <br />
 
-####Options: <br />
+#### Options: <br />
 
 -C <br />
   Use the specified configuration file(s) overriding any defaults <br />
@@ -95,7 +95,7 @@ named by the user. The paired and stranded parameters should be set to
 true/false as appropriate. Docker is enabled so processes are run within
 their respective containers.
 
-####Output: <br />
+#### Output: <br />
 
 This Nextflow workflow generates normalized read count files, bigwig
 files, directories containing quality results, and a directory containing
