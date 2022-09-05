@@ -5,20 +5,20 @@ viewing as a part of VEuPathDB. Generate required bigwig files, TPM-
 normalized count files, pre-calculated differential expression values for
 each gene, and quality information.
 
-Contents:
-install.me.sh
-nfscript.nf
-nextflow.config : this is a template that must be filled.
-custom_processes
+Contents: <br />
+install.me.sh <br />
+nfscript.nf <br />
+nextflow.config : this is a template that must be filled. <br />
+custom_processes <br />
 
-custom_processes is a directory that contains:
+custom_processes is a directory that contains: <br />
 
-deseq2_dockerinfo
-getphredencoding_tpm_dockerinfo
-hisat2samtools_dockerinfo
-{UTR_getphredencoding_tpm_dockerinfo } This is specific to this project.
+deseq2_dockerinfo <br />
+getphredencoding_tpm_dockerinfo <br />
+hisat2samtools_dockerinfo <br />
+{UTR_getphredencoding_tpm_dockerinfo } This is specific to this project. <br />
 
-Installation:
+Installation: <br />
 Docker must be installed independently by the user before install.me.sh
 can be run. Instructions can be found at:
 https://docs.docker.com/desktop/install/ubuntu/ . 
@@ -33,41 +33,41 @@ whose path is specified in the nextflow.config file.
 2. The complete and accurate nextflow.config file must be in the
 directory from which Nextflow is being run.
 
-Usage:
-nextflow [options] nfscript.nf
-Options:
--C
-  Use the specified configuration file(s) overriding any defaults
--D
-  Set JVM properties
--bg
-  Execute nextflow in background
--c, -config
-  Add the specified file to configuration set
--d, -dockerize
-  Launch nextflow via Docker (experimental)
--h
-  Print this help
--log
-  Set nextflow log file path
--q, -quiet
-  Do not print information messages
--syslog
-  Send logs to syslog server (eg. localhost:514)
--v, -version
-  Print the program version
+Usage: <br />
+nextflow [options] nfscript.nf <br />
+Options: <br />
+-C <br />
+  Use the specified configuration file(s) overriding any defaults <br />
+-D <br />
+  Set JVM properties <br />
+-bg <br />
+  Execute nextflow in background <br />
+-c, -config <br />
+  Add the specified file to configuration set <br />
+-d, -dockerize <br />
+  Launch nextflow via Docker (experimental) <br />
+-h <br />
+  Print this help <br />
+-log <br />
+  Set nextflow log file path <br />
+-q, -quiet <br />
+  Do not print information messages <br />
+-syslog <br />
+  Send logs to syslog server (eg. localhost:514) <br />
+-v, -version <br />
+  Print the program version <br />
 
 The nextflow.config file must be in the directory from where Nextflow is
 being run. The parameters must all be set to their appropriate values.
 The required configuration values are:
 
-params.reads = [path/*{1,2}.fastq.gz]
-params.reference = [path/reference_genome.fasta]
-params.gff = [path/reference_genome.gff]
-params.config = [path/sample_table.txt]
-params.outdir = [path/outdir]
-params.paired = [True/False]
-params.stranded = [True/False]
+params.reads = [path/*{1,2}.fastq.gz] <br />
+params.reference = [path/reference_genome.fasta] <br />
+params.gff = [path/reference_genome.gff] <br />
+params.config = [path/sample_table.txt] <br />
+params.outdir = [path/outdir] <br />
+params.paired = [True/False] <br />
+params.stranded = [True/False] <br />
 
 docker {
 enabled = true
