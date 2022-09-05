@@ -66,7 +66,7 @@ def get_rpk(count_dict, db):
                 raise SystemExit("Gene {} is not in the dictionary, check count files.\n".format(gene_id))
 
             # find the gene length by summing all the non-overlapping exons for a gene.
-            for exon in db.children(gene_id, level=2, featuretype='exon'):
+            for exon in db.children(gene_id, level=2, featuretype='cds'):
                 try:
                     exon_length = exon.end - exon.start + 1
                 except ValueError:

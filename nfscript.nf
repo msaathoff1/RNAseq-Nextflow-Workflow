@@ -50,7 +50,8 @@ if (params.paired) {
 * Pass read pairs into a channel for quality assessment
 */
 	Channel
-		.fromFilePairs(params.reads, checkIfExists:true)
+		.fromPath(params.reads, checkIfExists:true)
+		.map { file -> tuple(file.simpleName, [file]) }
 		.set {qualityEncoding_ch}
 }
 else {
@@ -68,22 +69,22 @@ else {
 * Run FASTQC for quality purposes
 */
 	process quality {
-	
+			
+		publishDir params.outdir, mode:'copy'
+
 		container = 'biocontainers/fastqc:v0.11.9_cv7'
 		
-		publishDir params.outdir, mode:'copy'
-		
 		input:
-		tuple val(pair_id), path(reads) from qualityEncoding_ch
+		tuple val(sample_id), path(reads) from qualityEncoding_ch
 		
 		output:
-		path('fastqc_dir', type:'dir') into fastqc_ch
-		tuple val(pair_id), path('fastqc_dir', type:'dir') into get_phred_ch
+		tuple val(sample_id), path("fastqc_dir_${sample_id}", type:'dir') into fastqc_ch
+		tuple val(sample_id), path("fastqc_dir_${sample_id}", type:'dir') into get_phred_ch
 		
 		script:
 		"""
-		mkdir fastqc_dir
-		fastqc -o fastqc_dir --extract ${reads}
+		mkdir fastqc_dir_${sample_id}
+		fastqc -o fastqc_dir_${sample_id} --extract ${reads}
 		"""
 	
 	}
@@ -95,20 +96,15 @@ else {
 		container = 'python3only'
 		
 		input:
-		tuple val(pair_id), path('fastqc_dir') from get_phred_ch
+		tuple val(sample_id), path("fastqc_dir_${sample_id}") from get_phred_ch
 		
 		output:
 		path("phredEncoding.txt") into (trim_phred_ch, align_phred_ch)
 		
 		shell:
-		if (params.paired)
-			"""
-			RunGetPhredEncoding2.py ${fastqc_dir}/${pair_id}_1_fastqc > phredEncoding.txt
-			"""
-		else
-			"""
-			RunGetPhredEncoding2.py ${fastqc_dir}/${pair_id}_fastqc > phredEncoding.txt
-			"""
+		"""
+		RunGetPhredEncoding2.py ${"fastqc_dir_${sample_id}"}/${sample_id}_fastqc > phredEncoding.txt
+		"""
 	}
 /*
 * Trim reads for quality purposes
@@ -143,6 +139,7 @@ else {
 */
 
 	process align {
+		maxForks 4
 	
 		container = 'hisat2samtools'
 		
@@ -159,7 +156,7 @@ else {
 		script:
 		if (params.paired)
 		"""
-		hisat2 --${phredEncoding} -x ${referenceIndex} -1 ${pair_id}_1_val_1.fq.gz -2 ${pair_id}_2_val_2.fq.gz | samtools view -bS | samtools sort > ${pair_id}.bam
+		hisat2 -p 4 --${phredEncoding} -x ${referenceIndex} -1 ${pair_id}_1_val_1.fq.gz -2 ${pair_id}_2_val_2.fq.gz | samtools view -bS | samtools sort > ${pair_id}.bam
 		samtools index ${pair_id}.bam
 		"""
 		else
